@@ -3,7 +3,6 @@ pipeline {
 
     parameters {
         choice(name: 'ENV', choices: ['dev', 'prod'], description: 'Выберите окружение')
-        string(name: 'FILE_NAME', defaultValue: '**', description: 'Файлы для отправки')
     }
 
     stages {
@@ -13,9 +12,9 @@ pipeline {
             }
         }
 
-        stage('Cleanup') {
+        stage('Checkout') {
             steps {
-                deleteDir()
+                checkout scm
             }
         }
 
@@ -24,15 +23,23 @@ pipeline {
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: 'Prod', 
+                            configName: 'Prod',
                             transfers: [
                                 sshTransfer(
-                                    sourceFiles: "${params.FILE_NAME}"
+                                    sourceFiles: '**',
+                                    removePrefix: '',
+                                    remoteDirectory: '/home/proger/jenkins_checkout'
                                 )
                             ]
                         )
                     ]
                 )
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                deleteDir()
             }
         }
     }
